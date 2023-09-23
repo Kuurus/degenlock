@@ -1,6 +1,6 @@
 # StarkNet Liquidity Locker
 
-Welcome to the StarkNet Liquidity Locker project! This project aims to create a liquidity locker leveraging the StarkNet network, a Layer 2 scaling solution for Ethereum, to ensure secure and efficient locking of liquidity in a decentralized manner.
+Welcome to the degenlock StarkNet Liquidity Locker project! This project aims to create a liquidity locker leveraging the StarkNet network, a Layer 2 scaling solution for Ethereum, to ensure secure and efficient locking of liquidity in a decentralized manner.
 
 ## Table of Contents
 - [Overview](#overview)
@@ -8,7 +8,6 @@ Welcome to the StarkNet Liquidity Locker project! This project aims to create a 
 - [Installation](#installation)
 - [Usage](#usage)
 - [Contributing](#contributing)
-- [License](#license)
 
 ## Overview
 
@@ -26,8 +25,8 @@ Before you begin, make sure you have [Node.js](https://nodejs.org/) and [npm](ht
 1. **Clone the Repository**
    
    ```sh
-   git clone https://github.com/username/StarkNet-Liquidity-Locker.git
-   cd StarkNet-Liquidity-Locker
+   git clone https://github.com/Kuurus/degenlock.git
+   cd degenlock
    ```
 2. **Install Dependencies**
    ```sh
@@ -35,8 +34,22 @@ Before you begin, make sure you have [Node.js](https://nodejs.org/) and [npm](ht
    ```
 3. **Compile Cairo Contracts**
    ```sh
-   cairo-compile contract.cairo --output contract_compiled.json
+   cairo-compile cairo1.cairo --output cairo1.json
    ```
 4. **Deploy Contracts to StarkNet**
+
    Follow the deployment guide in the [StarkNet documentation](https://starknetpy.readthedocs.io/en/latest/guide/deploying_contracts.html).
 
+## Usage
+
+After deploying the contracts to the StarkNet network, interact with them using Web3 libraries or any compatible wallet that supports StarkNet.
+
+```javascript
+// Example of interacting with the locker contract
+const lockerContract = new web3.eth.Contract(ABI, contractAddress);
+await lockerContract.methods.lockLiquidity(amount).send({ from: senderAddress });
+```
+
+## Contributing
+
+Contributions are welcome! We'll add guidelines later but pull requests, bug reports, and all other forms of contribution are welcomed and highly encouraged!
