@@ -28,6 +28,10 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 func claims(account: felt) -> (total: Uint256) {
 }
 
+@storage_var
+func locked_until(account: felt, contract: felt) -> (total: Uint256) {
+}
+
 @view
 func tokens_in_custody{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(account: felt) -> (total: Uint256) {
     return claims.read(account);
@@ -39,6 +43,11 @@ func withdraw_all_tokens{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_c
       let (me) = get_contract_address();
       let (caller) = get_caller_address();
       //Look token in custody
+      let (lockedtime) = locked_until(caller,contract).read();
+      //Revert if time not reached
+      with_attr error_message("problem timelock not reached") {
+        assert lockedtime < get_block_timestamp();
+      }
       let (am) = tokens_in_custody(caller);
       let (is_ok) = IERC20.transferFrom(contract_address=contract, sender=me, recipient=caller, amount=am);
       with_attr error_message("problem transferring the tokens") {
@@ -55,7 +64,7 @@ func deposit_tokens{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_
     let (caller) = get_caller_address();
     let (me) = get_contract_address();
     //Store information that the user have locked a token for x amount of time
-
+    locked_until.write(caller, contract, get_block_timestamp()+timelock);
     IERC20.transferFrom(contract_address=contract, sender=caller, recipient=me, amount=amount);
     let (current) = claims.read(caller);  
     let (new_total,_) = uint256_add(current, amount);
