@@ -1,55 +1,23 @@
-# StarkNet Liquidity Locker
+# Starknet Forge Template
 
-Welcome to the degenlock StarkNet Liquidity Locker project! This project aims to create a liquidity locker leveraging the StarkNet network, a Layer 2 scaling solution for Ethereum, to ensure secure and efficient locking of liquidity in a decentralized manner.
+This repository is a basic project for Starknet Forge - testing tool that is a part of Starknet Foundry.
 
-## Table of Contents
-- [Overview](#overview)
-- [Technology Stack](#technology-stack)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Contributing](#contributing)
+## Running `snforge`
 
-## Overview
+Simply `snforge test` command in you terminal
 
-The StarkNet Liquidity Locker is designed to provide projects with a means to lock liquidity in a secure and non-custodial way. By utilizing StarkNet’s Layer 2 scaling, the locker offers fast and cost-effective transactions while maintaining the security of the Ethereum mainnet.
+## GitHub Action
 
-## Technology Stack
+The `.github/workflows/checks.yml` file contains example workflow utilizing
+https://github.com/marketplace/actions/setup-starknet-foundry and https://github.com/marketplace/actions/setup-scarb
+actions.
 
-- **Smart Contract Language:** Cairo
-- **Network:** Ethereum Layer 2 - StarkNet
+Use it as a starting point for setting up checks for your own Starknet Foundry project.
 
-## Installation
+## Factory deploy syscall example :
 
-Before you begin, make sure you have [Node.js](https://nodejs.org/) and [npm](https://www.npmjs.com/) installed.
+https://github.com/OpenZeppelin/cairo-contracts/blob/f3e2a5f0547a429c716f32471b06df729cbdfb9f/src/tests/utils.cairo#L8
 
-1. **Clone the Repository**
-   
-   ```sh
-   git clone https://github.com/Kuurus/degenlock.git
-   cd degenlock
-   ```
-2. **Install Dependencies**
-   ```sh
-   npm install
-   ```
-3. **Compile Cairo Contracts**
-   ```sh
-   cairo-compile cairo1.cairo --output cairo1.json
-   ```
-4. **Deploy Contracts to StarkNet**
+or
 
-   Follow the deployment guide in the [StarkNet documentation](https://starknetpy.readthedocs.io/en/latest/guide/deploying_contracts.html).
-
-## Usage
-
-After deploying the contracts to the StarkNet network, interact with them using Web3 libraries or any compatible wallet that supports StarkNet.
-
-```javascript
-// Example of interacting with the locker contract
-const lockerContract = new web3.eth.Contract(ABI, contractAddress);
-await lockerContract.methods.lockLiquidity(amount).send({ from: senderAddress });
-```
-
-## Contributing
-
-Contributions are welcome! We'll add guidelines later but pull requests, bug reports, and all other forms of contribution are welcomed and highly encouraged!
+https://github.com/snapshot-labs/sx-starknet/blob/49e42850c808fea30e9fb5da5408478fee7ac680/starknet/src/factory/factory.cairo#L49C12-L49C12
