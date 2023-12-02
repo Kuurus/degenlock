@@ -197,3 +197,68 @@ mod MyToken {
         ERC20::ERC20Impl::decimals(@unsafe_state)
     }
 }
+
+#[starknet::interface]
+trait IERC20<TContractState> {
+    fn name(self: @TContractState) -> felt252;
+
+    fn symbol(self: @TContractState) -> felt252;
+
+    fn decimals(self: @TContractState) -> u8;
+
+    fn total_supply(self: @TContractState) -> u256;
+
+    fn balance_of(self: @TContractState, account: ContractAddress) -> u256;
+
+    fn allowance(self: @TContractState, owner: ContractAddress, spender: ContractAddress) -> u256;
+
+    fn transfer(ref self: TContractState, recipient: ContractAddress, amount: u256) -> bool;
+
+    fn transfer_from(
+        ref self: TContractState, sender: ContractAddress, recipient: ContractAddress, amount: u256
+    ) -> bool;
+
+    fn approve(ref self: TContractState, spender: ContractAddress, amount: u256) -> bool;
+}
+
+#[starknet::contract]
+mod Locker {
+    use starknet::get_caller_address;
+    use starknet::get_contract_address;
+    use super::{IERC20DispatcherTrait, IERC20LibraryDispatcher};
+    use starknet::{ContractAddress, SyscallResult};
+    #[storage]
+    struct Storage {
+        balances: LegacyMap::<ContractAddress, u256>,
+        lock_time: LegacyMap::<ContractAddress, felt252>  // TODO: Use blocktime & add locktime
+    }
+
+    #[generate_trait]
+    #[external(v0)]
+    impl ERC20 of IERC20 {
+        fn deposit(
+            ref self: ContractState, sender: ContractAddress, amount: u256
+        ) -> bool {
+            let recipient = get_contract_address();
+            IERC20LibraryDispatcher { class_hash: starknet::class_hash_const::<0x1234>() }  // TODO: check sender token address ?
+                .transfer_from(sender, recipient, amount);
+            let current_balance = self.balances.read(sender);
+            self.balances.write(sender, current_balance + amount);
+            return true;
+        }
+
+        fn withdraw(
+            ref self: ContractState, sender: ContractAddress, amount: u256
+        ) -> bool {
+            let current_balance = self.balances.read(sender);
+            if amount > current_balance {
+                return false;
+            }
+            let recipient = get_contract_address();
+            IERC20LibraryDispatcher { class_hash: starknet::class_hash_const::<0x1234>() }  // TODO: check sender token address ?
+                .transfer_from(recipient, sender, amount);
+            self.balances.write(sender, current_balance - amount);
+            return true;
+        }
+    }
+}
