@@ -1,0 +1,57 @@
+@import '../../../theme/mixins';
+
+.technologies {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	align-items: center;
+
+	gap: 30px;
+
+	@include transition();	
+	
+	@media (hover: hover) {
+		&:hover {
+			& .logoContainer {
+				opacity: 0.5;
+			}
+		}
+	}
+
+	@include md() {
+		gap: 40px;
+	}
+
+	@include lg() {
+		gap: 50px;
+	}
+}
+
+.logoContainer {
+	position: relative;
+
+	@include transition();
+
+	& > img {
+		width: auto;
+		height: 40px;
+
+		@include md() {
+			width: auto;
+			height: 50px;
+		}
+	}
+	
+	@include md() {
+		& + .logoContainer {
+			margin-left: 20px;
+		}
+	}
+
+	@media (hover: hover) {
+		&:hover {
+			opacity: 1 !important;
+			transform: scale(1.05);
+		}
+	}
+}

@@ -1,0 +1,142 @@
+@import './variables';
+//========================================================================================================
+// GENERAL
+//========================================================================================================
+* {
+	box-sizing: border-box;
+}
+*::before {
+	box-sizing: border-box;
+}
+*::after {
+	box-sizing: border-box;
+}
+
+body {
+	margin: 0 auto;
+	max-width: 1600px;
+
+	background-color: $black;
+}
+
+html {
+	height: 100%;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+button,
+span,
+a,
+p,
+input,
+textarea {
+	color: $white;
+
+	margin: 0;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+button,
+a {
+	// set font family
+	font-family: 'IBM Plex Sans', sans-serif;
+	font-weight: bold;
+}
+
+p,
+span,
+input,
+textarea {
+	// set font family
+	font-family: 'IBM Plex Sans', sans-serif;
+	font-weight: 400;
+}
+
+ul {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+a {
+	text-decoration: none;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+	-webkit-text-fill-color: $white;
+	box-shadow: 0 0 0px 1000px #00000000 inset;
+	-webkit-transition: background-color 5000s ease-in-out 0s;
+	transition: background-color 5000s ease-in-out 0s;
+}
+
+input,
+textarea {
+	background-color: transparent;
+}
+
+::-webkit-scrollbar {
+	width: 6px;
+	height: 6px;
+}
+
+//========================================================================================================
+// ANIMATIONS
+//========================================================================================================
+body::before {
+	content: ' ';
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+
+  background: linear-gradient(-45deg, #E73C7E20, #0c0c4f20);
+  background-size: 400% 400%;
+  -webkit-animation: Gradient 15s ease infinite;
+  animation: Gradient 15s ease infinite;
+}
+
+@-webkit-keyframes Gradient {
+    0% {
+        background-position: 0% 50%
+    }
+    50% {
+        background-position: 100% 50%
+    }
+    100% {
+        background-position: 0% 50%
+    }
+}
+
+@keyframes Gradient {
+    0% {
+        background-position: 0% 50%
+    }
+    50% {
+        background-position: 100% 50%
+    }
+    100% {
+        background-position: 0% 50%
+    }
+}
+//========================================================================================================
+// FONTS
+//========================================================================================================
