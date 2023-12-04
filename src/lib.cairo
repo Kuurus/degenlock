@@ -1,24 +1,25 @@
 use starknet::ContractAddress;
 use starknet::{syscalls, testing};
-use traits::TryInto;
-use option::OptionTrait;
 use starknet::{ClassHash, SyscallResult};
+use traits::{ Into, TryInto };
+use option::OptionTrait;
 #[starknet::interface]
 trait IHelloStarknet<TContractState> {
     fn increase_balance(ref self: TContractState, amount: felt252);
     fn get_balance(self: @TContractState) -> felt252;
-    fn deploy_contract(ref self: TContractState, contract_code: ClassHash) ;
+    fn deploy_contract(ref self: TContractState, contract_code: ClassHash, salt: felt252)-> ContractAddress;
 }
 
 #[starknet::contract]
 mod HelloStarknet {
+    use core::starknet::SyscallResultTrait;
     use starknet::{ClassHash, SyscallResult};
     use starknet_forge_template::HelloStarknetT;
     use starknet::ContractAddress;
     use starknet::syscalls::deploy_syscall;
     use core::result::ResultTrait;
     use starknet::{syscalls, testing};
-    use traits::TryInto;
+    use traits::{ Into, TryInto };
     use option::OptionTrait;
     #[storage]
     struct Storage {
@@ -44,15 +45,15 @@ mod HelloStarknet {
         }
 
          // Function to deploy challenges to players
-        fn deploy_contract(ref self: ContractState, contract_code : ClassHash)  {
+        fn deploy_contract(ref self: ContractState, contract_code : ClassHash, salt: felt252) -> ContractAddress {
             
-           
             //Deploy a new contract using deploy_syscall
-           syscalls::deploy_syscall(contract_code, 1, array![].span(), false);
+            let res = syscalls::deploy_syscall(contract_code, salt, array![].span(), false);
            //syscalls::deploy_syscall(contract_code.try_into().unwrap(), 0, array![].span(), false);
              //syscalls::deploy_syscall(contract_code.try_into().unwrap(), 1, array![].span(), false);
-         
-    
+            let (address, _) = res.unwrap_syscall();
+            address
+        
        
         }
          

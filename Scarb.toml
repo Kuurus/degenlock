@@ -15,7 +15,14 @@ openzeppelin = { git = "https://github.com/OpenZeppelin/cairo-contracts.git", ta
 
 [tool.snforge]
 # exit_first = true
+
 [tool.sncast]
 account = "test1"
+accounts-file = "/Users/pierre-etienne/.starknet_accounts/starknet_open_zeppelin_accounts.json"
+url = "http://localhost:5050/rpc"
+
+
+[tool.sncast.test5]
+account = "test5"
 accounts-file = "/Users/pierre-etienne/.starknet_accounts/starknet_open_zeppelin_accounts.json"
 url = "http://localhost:5050/rpc"
