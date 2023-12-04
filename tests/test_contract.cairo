@@ -50,7 +50,7 @@ fn test_cannot_increase_balance_with_zero_value() {
     //let contract = declare('HelloStarknetT');
     //let address = safe_dispatcher.deploy_contract(contract.class_hash);
     let contract = declare('MyToken');
-    let address = safe_dispatcher.deploy_contract(contract.class_hash);
+    let address = safe_dispatcher.deploy_contract(contract.class_hash,1);
     
     //let (address, _)= starknet::syscalls::deploy_syscall(HelloStarknetT::TEST_CLASS_HASH.try_into().unwrap(), 1, array![].span(), false).unwrap();
     //read address
