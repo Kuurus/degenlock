@@ -21,3 +21,7 @@ https://github.com/OpenZeppelin/cairo-contracts/blob/f3e2a5f0547a429c716f32471b0
 or
 
 https://github.com/snapshot-labs/sx-starknet/blob/49e42850c808fea30e9fb5da5408478fee7ac680/starknet/src/factory/factory.cairo#L49C12-L49C12
+
+## RUN devnet
+
+see https://github.com/0xSpaceShard/starknet-devnet-rs
