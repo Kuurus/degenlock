@@ -25,6 +25,18 @@ mod HelloStarknet {
     struct Storage {
         balance: felt252, 
     }
+    
+    #[event]
+    #[derive(Drop, starknet::Event)]
+    enum Event {
+        TokenDeployed: TokenDeployed
+    }
+
+    #[derive(Drop, starknet::Event)]
+    struct TokenDeployed {
+        erc20: ContractAddress,
+        owner: ContractAddress
+    }
 
     #[constructor]
     fn constructor(
@@ -46,12 +58,19 @@ mod HelloStarknet {
 
          // Function to deploy challenges to players
         fn deploy_contract(ref self: ContractState, contract_code : ClassHash, salt: felt252) -> ContractAddress {
-            
+            let caller = starknet::get_caller_address();
             //Deploy a new contract using deploy_syscall
             let res = syscalls::deploy_syscall(contract_code, salt, array![].span(), false);
            //syscalls::deploy_syscall(contract_code.try_into().unwrap(), 0, array![].span(), false);
              //syscalls::deploy_syscall(contract_code.try_into().unwrap(), 1, array![].span(), false);
             let (address, _) = res.unwrap_syscall();
+              self
+                .emit(
+                    TokenDeployed {
+                        erc20: address,
+                        owner: caller,
+                    }
+                );
             address
         
        
@@ -106,7 +125,7 @@ mod HelloStarknetT {
             
            
             //Deploy a new contract using deploy_syscall
-            //let (address, _)= starknet::syscalls::deploy_syscall(HelloStarknetT::TEST_CLASS_HASH.try_into().unwrap(), 1, array![].span(), false)?;
+            //let (address, _)= starknet::syscalls::deploy_syscall(HelloStarknetT::TEST_CLASS_HASH.try_into().unwrap(), 1, array![].span(), false);
              //syscalls::deploy_syscall(contract_code.try_into().unwrap(), 1, array![].span(), false);
            
     
@@ -129,11 +148,11 @@ mod MyToken {
     struct Storage {}
 
     #[constructor]
-    fn constructor(ref self: ContractState, recipient: ContractAddress) {
+    fn constructor(ref self: ContractState) {
         let name = 'Pepecoin';
         let symbol = 'PEPE';
         let initial_supply = 125;
-        let recipient = starknet::contract_address_const::<0x01>();
+        let recipient =  starknet::get_caller_address();
 
         let mut unsafe_state = ERC20::unsafe_new_contract_state();
         ERC20::InternalImpl::initializer(ref unsafe_state, name, symbol);

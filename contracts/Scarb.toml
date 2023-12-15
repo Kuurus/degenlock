@@ -27,7 +27,7 @@ account = "test5"
 accounts-file = "/Users/pierre-etienne/.starknet_accounts/starknet_open_zeppelin_accounts.json"
 url = "http://localhost:5050/rpc"
 
-[tool.sncast]
-account = "testnet"
-accounts-file = "/Users/pierre-etienne/.starknet_accounts/starknet_open_zeppelin_accounts.json"
-url = "https://starknet-goerli.infura.io/v3/3d5e774ac52847fd8cf5c2dd2fc76cf6"
+#[tool.sncast]
+#account = "testnet"
+#accounts-file = "/Users/pierre-etienne/.starknet_accounts/starknet_open_zeppelin_accounts.json"
+#url = "https://starknet-goerli.infura.io/v3/3d5e774ac52847fd8cf5c2dd2fc76cf6"

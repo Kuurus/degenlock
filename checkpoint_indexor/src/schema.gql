@@ -1,0 +1,7 @@
+scalar BigInt
+
+type Token {
+  id: String! # Token address
+  owner: String
+  tokenName: String
+}
