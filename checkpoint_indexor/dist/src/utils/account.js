@@ -10,7 +10,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.loadAccount = exports.createAccount = exports.newAccount = void 0;
-const utils_1 = require("./utils");
 function newAccount(accountId, mysql) {
     return __awaiter(this, void 0, void 0, function* () {
         const newAccount = yield loadAccount(accountId, mysql);
@@ -23,8 +22,6 @@ function createAccount(token, accountId, tx, block) {
         return {
             id: accountId,
             account: accountId.split('-')[1],
-            token: token.id,
-            balance: (0, utils_1.convertToDecimal)(0, token.decimals),
             rawBalance: BigInt(0),
             modified: block.timestamp / 1000,
             tx: tx.transaction_hash

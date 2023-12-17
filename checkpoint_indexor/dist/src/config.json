@@ -1,14 +1,14 @@
 {
-    "network_node_url": "https://starknet-mainnet.infura.io/v3/1dbe991732f94d4082647ef697d9bf7f",
-    "start": 2700,
+    "network_node_url": "https://starknet-goerli.infura.io/v3/3d5e774ac52847fd8cf5c2dd2fc76cf6",
+    "start": 919381,
     "sources": [
         {
-            "contract": "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
-            "start": 2700,
+            "contract": "0x061a4c53f11e29716e4c0bb28192fa03b74346a3cfdf08fcef43148b92679887",
+            "start": 919381,
             "events": [
                 {
-                    "name": "Transfer",
-                    "fn": "handleTransfer"
+                    "name": "TokenDeployed",
+                    "fn": "handleTokenDeployed"
                 }
             ]
         }
