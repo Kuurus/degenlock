@@ -40,9 +40,7 @@ const starknet = __importStar(require("starknet"));
 const utils_1 = require("./utils");
 const erc20_json_1 = __importDefault(require("../abis/erc20.json"));
 const provider = new starknet.Provider({
-    sequencer: {
-        network: 'mainnet-alpha'
-    }
+    rpc: { nodeUrl: 'https://starknet-goerli.infura.io/v3/3d5e774ac52847fd8cf5c2dd2fc76cf6' }
 });
 function newToken(tokenAddress, mysql) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -54,16 +52,10 @@ exports.newToken = newToken;
 function createToken(tokenAddress) {
     return __awaiter(this, void 0, void 0, function* () {
         const erc20 = new starknet.Contract(erc20_json_1.default, tokenAddress, provider);
-        const symbol = yield erc20.symbol();
+        console.log(yield erc20.name());
         const name = yield erc20.name();
-        const decimals = yield erc20.decimals();
-        const totalSupply = yield erc20.totalSupply();
         return {
-            id: tokenAddress,
-            symbol: (0, utils_1.hexToStr)(symbol.res.toString(16)),
-            name: (0, utils_1.hexToStr)(name.res.toString(16)),
-            decimals: decimals.res.toNumber(),
-            totalSupply: (0, utils_1.convertToDecimal)(totalSupply.res.low, decimals.res)
+            name: (0, utils_1.hexToStr)(name.res.toString(16))
         };
     });
 }

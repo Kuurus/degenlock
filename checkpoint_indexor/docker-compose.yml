@@ -1,4 +1,5 @@
 version: '3.8'
+
 services:
   mysql:
     image: mysql:8.0
@@ -12,6 +13,22 @@ services:
       - MYSQL_DATABASE=checkpoint
     volumes:
       - mysql:/var/lib/mysql
+    networks:
+      - checkpoint
+
+  indexer:
+    build: ./checkpoint_indexor
+    networks:
+      - checkpoint
+    ports:
+      - '3000:3000'
+    environment:
+      - DATABASE_URL=mysql://root:default_password@mysql:3306/checkpoint
+
 volumes:
   mysql:
     driver: local
+
+networks:
+  checkpoint:
+    driver: bridge
