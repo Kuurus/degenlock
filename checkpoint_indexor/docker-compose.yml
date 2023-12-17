@@ -43,6 +43,7 @@ services:
 volumes:
   mysql:
     driver: local
+  ssl_data:
 
 networks:
   checkpoint:
