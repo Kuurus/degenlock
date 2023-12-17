@@ -4,9 +4,6 @@ FROM node:18.17.0
 # Set the working directory in the container
 WORKDIR /usr/src/app
 
-# Install Yarn
-RUN npm install --global yarn
-
 # Copy package.json, yarn.lock, and package-lock.json if available
 COPY package*.json ./
 COPY yarn.lock* ./
