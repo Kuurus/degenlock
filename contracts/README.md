@@ -65,3 +65,12 @@ sudo sncast --url https://starknet-goerli.infura.io/v3/3d5e774ac52847fd8cf5c2dd2
 0x4d49b78b388fce5a5557199d00a486648c9154d8412d235664112bb0e4e5b8
 
 sudo sncast --url https://starknet-goerli.infura.io/v3/3d5e774ac52847fd8cf5c2dd2fc76cf6 declare --contract-name HelloStarknet
+
+starkli account fetch 0x03d4eb3484ea8a9f388daecd48b0495c55d5c90203b4d5c40433ede24fa3aed0 --rpc https://starknet-goerli.infura.io/v3/3d5e774ac52847fd8cf5c2dd2fc76cf6 --output account0_account.json
+
+starkli signer keystore inspect ~/.starkli-wallets/deployer/keystore.json
+starkli signer keystore from-key ~/.starkli-wallets/deployer/account.json
+
+starkli declare target/dev/starknet_forge_template_MyToken.contract_class.json --account account0_account.json --keystore ~/.starkli-wallets/deployer/keystore.json --rpc https://starknet-goerli.infura.io/v3/3d5e774ac52847fd8cf5c2dd2fc76cf6
+
+https://medium.com/@mr.evans0075/how-to-deploy-starknet-contracts-on-testnet-or-mainnet-2177fb34c64e
