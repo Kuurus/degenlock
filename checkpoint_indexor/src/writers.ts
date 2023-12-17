@@ -2,7 +2,6 @@ import type { CheckpointWriter } from '@snapshot-labs/checkpoint';
 import { convertToDecimal, getEvent } from './utils/utils';
 import { createToken, loadToken, newToken, Token } from './utils/token';
 import { createAccount, newAccount, Account, loadAccount } from './utils/account';
-import { createAggregated, loadAggregated, AggregatedTx, newAggreg } from './utils/agrTransactions';
 
 export async function handleTokenDeployed({
   block,

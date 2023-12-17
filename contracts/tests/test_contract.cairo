@@ -7,7 +7,9 @@ use starknet_forge_template::IHelloStarknetSafeDispatcher;
 use starknet_forge_template::IHelloStarknetSafeDispatcherTrait;
 use starknet_forge_template::HelloStarknet;
 use starknet_forge_template::HelloStarknetT;
+use starknet_forge_template::IERC20Dispatcher;
 use openzeppelin::token::erc20::ERC20;
+
 
 fn deploy_contract(name: felt252) -> ContractAddress {
     //Create call data for the constructor
@@ -50,8 +52,11 @@ fn test_cannot_increase_balance_with_zero_value() {
     //let contract = declare('HelloStarknetT');
     //let address = safe_dispatcher.deploy_contract(contract.class_hash);
     let contract = declare('MyToken');
-    let address = safe_dispatcher.deploy_contract(contract.class_hash,1);
-    
+    let mut calldata: Array<felt252> = ArrayTrait::new();
+    calldata.append(444);
+    calldata.append('zizicoin');
+    calldata.append('zizi');
+    let address = safe_dispatcher.deploy_contract(contract.class_hash,calldata);
     //let (address, _)= starknet::syscalls::deploy_syscall(HelloStarknetT::TEST_CLASS_HASH.try_into().unwrap(), 1, array![].span(), false).unwrap();
     //read address
     //println!("address: {}", address);

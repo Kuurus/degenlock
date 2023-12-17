@@ -7,7 +7,7 @@ use option::OptionTrait;
 trait IHelloStarknet<TContractState> {
     fn increase_balance(ref self: TContractState, amount: felt252);
     fn get_balance(self: @TContractState) -> felt252;
-    fn deploy_contract(ref self: TContractState, contract_code: ClassHash, salt: felt252)-> ContractAddress;
+    fn deploy_contract(ref self: TContractState, contract_code: ClassHash, constructor: Array<felt252>)-> ContractAddress;
 }
 
 #[starknet::contract]
@@ -21,9 +21,12 @@ mod HelloStarknet {
     use starknet::{syscalls, testing};
     use traits::{ Into, TryInto };
     use option::OptionTrait;
+    use array::ArrayTrait;
+    use openzeppelin::token::erc20::interface::{IERC20CamelDispatcher, IERC20CamelDispatcherTrait};
     #[storage]
     struct Storage {
         balance: felt252, 
+        salt: felt252
     }
     
     #[event]
@@ -57,10 +60,13 @@ mod HelloStarknet {
         }
 
          // Function to deploy challenges to players
-        fn deploy_contract(ref self: ContractState, contract_code : ClassHash, salt: felt252) -> ContractAddress {
+        fn deploy_contract(ref self: ContractState, contract_code : ClassHash, constructor : Array<felt252>) -> ContractAddress {
             let caller = starknet::get_caller_address();
+            let salt_local=self.salt.read();
+            self.salt.write(salt_local + 1);
+           
             //Deploy a new contract using deploy_syscall
-            let res = syscalls::deploy_syscall(contract_code, salt, array![].span(), false);
+            let res = syscalls::deploy_syscall(contract_code, salt_local, constructor.span(), false);
            //syscalls::deploy_syscall(contract_code.try_into().unwrap(), 0, array![].span(), false);
              //syscalls::deploy_syscall(contract_code.try_into().unwrap(), 1, array![].span(), false);
             let (address, _) = res.unwrap_syscall();
@@ -71,7 +77,8 @@ mod HelloStarknet {
                         owner: caller,
                     }
                 );
-            address
+                 self.salt.write(salt_local + 1);
+                address
         
        
         }
@@ -97,6 +104,7 @@ mod HelloStarknetT {
     use starknet::{syscalls, testing};
     use traits::TryInto;
     use option::OptionTrait;
+    
     #[storage]
     struct Storage {
         balance: felt252, 
@@ -143,15 +151,15 @@ mod HelloStarknetT {
 mod MyToken {
     use starknet::ContractAddress;
     use openzeppelin::token::erc20::ERC20;
+    use core::integer::{u256_from_felt252};
 
     #[storage]
     struct Storage {}
 
     #[constructor]
-    fn constructor(ref self: ContractState) {
-        let name = 'Pepecoin';
-        let symbol = 'PEPE';
-        let initial_supply = 125;
+    fn constructor(ref self: ContractState, initial : felt252, name:felt252, symbol:felt252 ) {
+       
+        let initial_supply = u256_from_felt252(initial);
         let recipient =  starknet::get_caller_address();
 
         let mut unsafe_state = ERC20::unsafe_new_contract_state();
@@ -280,5 +288,6 @@ mod Locker {
             self.balances.write(sender, current_balance - amount);
             return true;
         }
+       
     }
 }
