@@ -17,7 +17,7 @@ services:
       - checkpoint
 
   indexer:
-    build: ./checkpoint_indexor
+    build: .
     networks:
       - checkpoint
     ports:
