@@ -38,6 +38,10 @@ services:
     environment:
       ALLOWED_DOMAINS: 'indexer.starkmint.com'
       SITES: 'indexer.starkmint.com=indexer:3000'
+    networks:
+      - checkpoint
+    depends_on:
+      - indexer
 
 
 volumes:
