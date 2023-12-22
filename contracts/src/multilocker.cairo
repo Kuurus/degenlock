@@ -1,76 +1,177 @@
-#[contract]
-mod Contract {
+use starknet::ContractAddress;
+
+#[starknet::interface]
+trait ITokenLocker<TContractState> {
+    fn lock(ref self: TContractState, token_contract: ContractAddress, amount: u256);
+    fn unlock(ref self: TContractState, token_contract: ContractAddress, lock_timestamp: u64);
+    fn get_locked_amount(
+        self: @TContractState,
+        token_contract: ContractAddress,
+        owner: ContractAddress,
+        lock_timestamp: u64
+    ) -> u256;
+    fn get_time_left(
+        self: @TContractState,
+        token_contract: ContractAddress,
+        owner: ContractAddress,
+        lock_timestamp: u64
+    ) -> u64;
+}
+
+#[starknet::contract]
+mod TokenLocker {
+    use openzeppelin::token::erc20::{ERC20ABIDispatcher, ERC20ABIDispatcherTrait};
+    use starknet::{ContractAddress, get_caller_address, get_contract_address, get_block_timestamp};
+    use starknet_forge_template::errors::{
+        ZERO_LOCK, ZERO_LOCK_TIME, LOCK_EXIST, TRANSFER_FAIL, LOCK_NONEXIST, STILL_LOCKED
+    };
+
+    #[event]
+    #[derive(Drop, starknet::Event)]
+    enum Event {
+        TokenLocked: TokenLocked,
+        TokenUnlocked: TokenUnlocked
+    }
+
+    #[derive(Drop, starknet::Event)]
+    struct TokenLocked {
+        locker: ContractAddress,
+        token: ContractAddress,
+        lock_timestamp: u64,
+        amount: u256
+    }
+
+    #[derive(Drop, starknet::Event)]
+    struct TokenUnlocked {
+        unlocker: ContractAddress,
+        token: ContractAddress,
+        unlock_timestamp: u64,
+        amount: u256
+    }
+
+    #[storage]
     struct Storage {
-        balances: Mapping(Address, u64),
-        lock_times: Mapping(Address, u64),   # The time the funds were locked
-        lock_periods: Mapping(Address, u64), # The time period for which funds are locked
+        lock_time: u64,
+        locks: LegacyMap<(ContractAddress, ContractAddress, u64), u256>,
     }
 
-    #[event]
-    fn FundsLocked(sender: Address, amount: u64, until: u64) {}
-
-    #[event]
-    fn FundsClaimed(sender: Address, amount: u64) {}
-
+    /// Constructor called once when the contract is deployed.
+    /// # Arguments
+    /// * `lock_time` - Locking period as timestamp.
     #[constructor]
-    fn constructor() {
-        # Initial setup if needed
+    fn constructor(ref self: ContractState, lock_time: u64,) {
+        self.lock_time.write(lock_time);
     }
 
-    #[external]
-    fn lock_funds(period: u64) {
-        let sender = get_sender();
-        let value = get_value();
+    #[abi(embed_v0)]
+    impl TokenLocker of super::ITokenLocker<ContractState> {
+        /// Locks tokens from callers account
+        /// # Arguments
+        /// * `token_contract` - Address of token contract that is going to be locked
+        /// * `amount` - Amount of tokens that is going to be locked
+        fn lock(ref self: ContractState, token_contract: ContractAddress, amount: u256) {
+            assert(amount != 0, ZERO_LOCK);
 
-        # Check if sender has locked funds
-        let current_balance = balances.get(sender, default=0);
-        if current_balance > 0:
-            raise "Sender already has funds locked"
+            let caller = get_caller_address();
+            let current_time = get_block_timestamp();
+            assert(self.locks.read((token_contract, caller, current_time)) == 0, LOCK_EXIST);
 
-        balances.write(sender, value);
-        lock_times.write(sender, env::get_time());
-        lock_periods.write(sender, period);
+            self.locks.write((token_contract, caller, current_time), amount);
 
-        FundsLocked(sender, value, env::get_time() + period);
-    }
+            let this_address = get_contract_address();
+            let initial_balance = ERC20ABIDispatcher { contract_address: token_contract }
+                .balanceOf(this_address);
+            ERC20ABIDispatcher { contract_address: token_contract }
+                .transferFrom(caller, this_address, amount);
+            assert(
+                ERC20ABIDispatcher { contract_address: token_contract }.balanceOf(this_address)
+                    - initial_balance == amount,
+                TRANSFER_FAIL
+            );
 
-    #[external]
-    fn claim_funds() {
-        let sender = get_sender();
+            self
+                .emit(
+                    TokenLocked {
+                        locker: caller,
+                        token: token_contract,
+                        lock_timestamp: current_time,
+                        amount: amount
+                    }
+                );
+        }
 
-        let locked_since = lock_times.get(sender);
-        let lock_period = lock_periods.get(sender);
-        let current_balance = balances.get(sender);
+        /// Unlocks tokens to callers account
+        /// # Arguments
+        /// * `token_contract` - Address of token contract that is going to be unlocked
+        /// * `lock_timestamp` - Initial lock timestamp
+        fn unlock(ref self: ContractState, token_contract: ContractAddress, lock_timestamp: u64) {
+            assert(lock_timestamp != 0, ZERO_LOCK_TIME);
 
-        if env::get_time() < locked_since + lock_period:
-            raise "Funds are still locked"
+            let caller = get_caller_address();
+            let current_time = get_block_timestamp();
+            let locked_amount = self.locks.read((token_contract, caller, lock_timestamp));
 
-        balances.write(sender, 0);  # Clear the balance
-        lock_times.write(sender, 0);  # Clear the lock time
-        lock_periods.write(sender, 0);  # Clear the lock period
+            assert(locked_amount != 0, LOCK_NONEXIST);
+            let lock_end_time = lock_timestamp + self.lock_time.read();
 
-        FundsClaimed(sender, current_balance);
-        # Add functionality to send tokens back to the user
-    }
+            assert(current_time >= lock_end_time, STILL_LOCKED);
 
-    #[view]
-    fn get_locked_details(sender: Address) -> (u64, u64, u64) {
-        let balance = balances.get(sender, default=0);
-        let locked_since = lock_times.get(sender, default=0);
-        let lock_period = lock_periods.get(sender, default=0);
-        return (balance, locked_since, lock_period)
-    }
+            self.locks.write((token_contract, caller, lock_timestamp), 0);
 
-    #[view]
-    fn get_balance(sender: Address) -> u64 {
-        return balances.get(sender, default=0)
-    }
+            ERC20ABIDispatcher { contract_address: token_contract }.transfer(caller, locked_amount);
 
-    fn get_sender() -> Address {
-        msg::sender()
-    }
+            self
+                .emit(
+                    TokenUnlocked {
+                        unlocker: caller,
+                        token: token_contract,
+                        unlock_timestamp: current_time,
+                        amount: locked_amount
+                    }
+                );
+        }
 
-    fn get_value() -> u64 {
-        msg::value()
+        /// View method for locked amount
+        /// # Arguments
+        /// * `token_contract` - Address of token contract
+        /// * `owner` - Initial lock timestamp
+        /// * `lock_timestamp` - Initial lock timestamp
+        /// # Returns
+        /// Locked amount
+        fn get_locked_amount(
+            self: @ContractState,
+            token_contract: ContractAddress,
+            owner: ContractAddress,
+            lock_timestamp: u64
+        ) -> u256 {
+            self.locks.read((token_contract, owner, lock_timestamp))
+        }
+
+        /// View method for time left to unlock
+        /// # Arguments
+        /// * `token_contract` - Address of token contract
+        /// * `owner` - Initial lock timestamp
+        /// * `lock_timestamp` - Initial lock timestamp
+        /// # Returns
+        /// Time left to unlock
+        fn get_time_left(
+            self: @ContractState,
+            token_contract: ContractAddress,
+            owner: ContractAddress,
+            lock_timestamp: u64
+        ) -> u64 {
+            let locked_amount = self.locks.read((token_contract, owner, lock_timestamp));
+            if (locked_amount == 0) {
+                return 0_u64;
+            }
+
+            let lock_end_time = lock_timestamp + self.lock_time.read();
+            let current_time = get_block_timestamp();
+            if (current_time >= lock_end_time) {
+                return 0_u64;
+            }
+
+            lock_end_time - current_time
+        }
     }
 }
