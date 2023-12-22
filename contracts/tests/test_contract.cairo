@@ -3,12 +3,12 @@ use starknet::ContractAddress;
 use snforge_std::{declare, ContractClassTrait};
 use traits::TryInto;
 use option::OptionTrait;
-use starknet_forge_template::IHelloStarknetSafeDispatcher;
-use starknet_forge_template::IHelloStarknetSafeDispatcherTrait;
-use starknet_forge_template::HelloStarknet;
-use starknet_forge_template::HelloStarknetT;
-use starknet_forge_template::IERC20Dispatcher;
-use openzeppelin::token::erc20::ERC20;
+use starknet_forge_template::token_locker::IHelloStarknetSafeDispatcher;
+use starknet_forge_template::token_locker::IHelloStarknetSafeDispatcherTrait;
+use starknet_forge_template::token_locker::HelloStarknet;
+use starknet_forge_template::token_locker::HelloStarknetT;
+use starknet_forge_template::token_locker::IERC20Dispatcher;
+use openzeppelin::token::erc20::ERC20Component;
 use starknet::contract_address_to_felt252;
 
 
