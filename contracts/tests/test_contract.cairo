@@ -9,6 +9,7 @@ use starknet_forge_template::HelloStarknet;
 use starknet_forge_template::HelloStarknetT;
 use starknet_forge_template::IERC20Dispatcher;
 use openzeppelin::token::erc20::ERC20;
+use starknet::contract_address_to_felt252;
 
 
 fn deploy_contract(name: felt252) -> ContractAddress {
@@ -56,6 +57,8 @@ fn test_cannot_increase_balance_with_zero_value() {
     calldata.append(444);
     calldata.append('zizicoin');
     calldata.append('zizi');
+    let reciepient = contract_address_to_felt252(contract_address);
+    calldata.append(reciepient);
     let address = safe_dispatcher.deploy_contract(contract.class_hash,calldata);
     //let (address, _)= starknet::syscalls::deploy_syscall(HelloStarknetT::TEST_CLASS_HASH.try_into().unwrap(), 1, array![].span(), false).unwrap();
     //read address

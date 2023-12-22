@@ -150,6 +150,7 @@ mod HelloStarknetT {
 #[starknet::contract]
 mod MyToken {
     use starknet::ContractAddress;
+    use starknet::contract_address_try_from_felt252;
     use openzeppelin::token::erc20::ERC20;
     use core::integer::{u256_from_felt252};
 
@@ -157,11 +158,11 @@ mod MyToken {
     struct Storage {}
 
     #[constructor]
-    fn constructor(ref self: ContractState, initial : felt252, name:felt252, symbol:felt252 ) {
+    fn constructor(ref self: ContractState, initial : felt252, name:felt252, symbol:felt252, recipient_felt : felt252 ) {
        
         let initial_supply = u256_from_felt252(initial);
-        let recipient =  starknet::get_caller_address();
-
+        let recipient : ContractAddress = contract_address_try_from_felt252(recipient_felt).unwrap();
+        
         let mut unsafe_state = ERC20::unsafe_new_contract_state();
         ERC20::InternalImpl::initializer(ref unsafe_state, name, symbol);
         ERC20::InternalImpl::_mint(ref unsafe_state, recipient, initial_supply);
