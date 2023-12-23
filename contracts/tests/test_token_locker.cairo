@@ -12,7 +12,7 @@ use starknet_forge_template::tokens::interface::{
 
 fn setup() -> (ContractAddress, ContractAddress, ContractAddress) {
     let owner: ContractAddress = 'owner'.try_into().unwrap();
-    let locker_calldata = array![200];
+    let locker_calldata = array![];
 
     let locker_contract = declare('TokenLocker');
     let locker_address = locker_contract.deploy(@locker_calldata).unwrap();
@@ -52,7 +52,7 @@ fn test_lock() {
 
     start_warp(CheatTarget::One(locker), 100);
     start_prank(CheatTarget::One(locker), owner);
-    locker_dispatcher.lock(token, 1000);
+    locker_dispatcher.lock(token, 1000, 200);
     stop_prank(CheatTarget::One(locker));
 
     assert(token_dispatcher.balanceOf(owner) == 0, 'balanceOf owner not 0');
@@ -60,11 +60,11 @@ fn test_lock() {
     assert(token_dispatcher.balanceOf(locker) == 1000, 'balanceOf locker not 1000');
 
     assert(
-        locker_dispatcher.get_locked_amount(token, owner, 100) == 1000,
+        locker_dispatcher.get_locked_amount(token, owner, 100, 200) == 1000,
         'lockedAmount owner not 1000'
     );
 
-    assert(locker_dispatcher.get_time_left(token, owner, 100) == 200, 'time left not 200');
+    assert(locker_dispatcher.get_time_left(token, owner, 100, 200) == 200, 'time left not 200');
     stop_warp(CheatTarget::One(locker));
 }
 
@@ -81,14 +81,14 @@ fn test_unlock_early() {
 
     start_warp(CheatTarget::One(locker), 100);
     start_prank(CheatTarget::One(locker), owner);
-    locker_dispatcher.lock(token, 1000);
+    locker_dispatcher.lock(token, 1000, 200);
     stop_prank(CheatTarget::One(locker));
 
     assert(token_dispatcher.balanceOf(owner) == 0, 'balanceOf owner not 0');
 
     start_warp(CheatTarget::One(locker), 200);
     start_prank(CheatTarget::One(locker), owner);
-    locker_dispatcher.unlock(token, 100);
+    locker_dispatcher.unlock(token, 100, 200);
     stop_prank(CheatTarget::One(locker));
     stop_warp(CheatTarget::One(locker));
 }
@@ -107,14 +107,14 @@ fn test_unlock_no_owner() {
 
     start_warp(CheatTarget::One(locker), 100);
     start_prank(CheatTarget::One(locker), owner);
-    locker_dispatcher.lock(token, 1000);
+    locker_dispatcher.lock(token, 1000, 200);
     stop_prank(CheatTarget::One(locker));
 
     assert(token_dispatcher.balanceOf(owner) == 0, 'balanceOf owner not 0');
 
     start_warp(CheatTarget::One(locker), 300);
     start_prank(CheatTarget::One(locker), no_owner);
-    locker_dispatcher.unlock(token, 100);
+    locker_dispatcher.unlock(token, 100, 200);
     stop_prank(CheatTarget::One(locker));
 }
 
@@ -130,23 +130,23 @@ fn test_unlock() {
 
     start_warp(CheatTarget::One(locker), 100);
     start_prank(CheatTarget::One(locker), owner);
-    locker_dispatcher.lock(token, 1000);
+    locker_dispatcher.lock(token, 1000, 200);
     stop_prank(CheatTarget::One(locker));
 
     assert(token_dispatcher.balanceOf(owner) == 0, 'balanceOf owner not 0');
 
     start_warp(CheatTarget::One(locker), 300);
     start_prank(CheatTarget::One(locker), owner);
-    locker_dispatcher.unlock(token, 100);
+    locker_dispatcher.unlock(token, 100, 200);
     stop_prank(CheatTarget::One(locker));
 
     assert(token_dispatcher.balanceOf(locker) == 0, 'balanceOf locker not 0');
 
     assert(token_dispatcher.balanceOf(owner) == 1000, 'balanceOf owner not 1000');
 
-    assert(locker_dispatcher.get_locked_amount(token, owner, 100) == 0, 'lockedAmount owner not 0');
+    assert(locker_dispatcher.get_locked_amount(token, owner, 100, 200) == 0, 'lockedAmount owner not 0');
 
-    assert(locker_dispatcher.get_time_left(token, owner, 100) == 0, 'time left not 0');
+    assert(locker_dispatcher.get_time_left(token, owner, 100, 200) == 0, 'time left not 0');
     stop_warp(CheatTarget::One(locker));
 }
 
@@ -162,7 +162,7 @@ fn test_view_methods() {
 
     start_warp(CheatTarget::One(locker), 100);
     start_prank(CheatTarget::One(locker), owner);
-    locker_dispatcher.lock(token, 1000);
+    locker_dispatcher.lock(token, 1000, 200);
     stop_prank(CheatTarget::One(locker));
     stop_warp(CheatTarget::One(locker));
 }

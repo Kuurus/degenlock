@@ -2,19 +2,21 @@ use starknet::ContractAddress;
 
 #[starknet::interface]
 trait ITokenLocker<TContractState> {
-    fn lock(ref self: TContractState, token_contract: ContractAddress, amount: u256);
-    fn unlock(ref self: TContractState, token_contract: ContractAddress, lock_timestamp: u64);
+    fn lock(ref self: TContractState, token_contract: ContractAddress, amount: u256, lock_duration: u64);
+    fn unlock(ref self: TContractState, token_contract: ContractAddress, lock_timestamp: u64, lock_duration: u64);
     fn get_locked_amount(
         self: @TContractState,
         token_contract: ContractAddress,
         owner: ContractAddress,
-        lock_timestamp: u64
+        lock_timestamp: u64,
+        lock_duration: u64
     ) -> u256;
     fn get_time_left(
         self: @TContractState,
         token_contract: ContractAddress,
         owner: ContractAddress,
-        lock_timestamp: u64
+        lock_timestamp: u64,
+        lock_duration: u64
     ) -> u64;
 }
 
@@ -51,16 +53,15 @@ mod TokenLocker {
 
     #[storage]
     struct Storage {
-        lock_time: u64,
-        locks: LegacyMap<(ContractAddress, ContractAddress, u64), u256>,
+        locks: LegacyMap<(ContractAddress, ContractAddress, u64, u64), u256>,
     }
 
     /// Constructor called once when the contract is deployed.
     /// # Arguments
     /// * `lock_time` - Locking period as timestamp.
     #[constructor]
-    fn constructor(ref self: ContractState, lock_time: u64,) {
-        self.lock_time.write(lock_time);
+    fn constructor(ref self: ContractState ) {
+       
     }
 
     #[abi(embed_v0)]
@@ -69,14 +70,14 @@ mod TokenLocker {
         /// # Arguments
         /// * `token_contract` - Address of token contract that is going to be locked
         /// * `amount` - Amount of tokens that is going to be locked
-        fn lock(ref self: ContractState, token_contract: ContractAddress, amount: u256) {
+        fn lock(ref self: ContractState, token_contract: ContractAddress, amount: u256, lock_duration: u64) {
             assert(amount != 0, ZERO_LOCK);
 
             let caller = get_caller_address();
             let current_time = get_block_timestamp();
-            assert(self.locks.read((token_contract, caller, current_time)) == 0, LOCK_EXIST);
+            assert(self.locks.read((token_contract, caller, current_time, lock_duration)) == 0, LOCK_EXIST);
 
-            self.locks.write((token_contract, caller, current_time), amount);
+            self.locks.write((token_contract, caller, current_time, lock_duration), amount);
 
             let this_address = get_contract_address();
             let initial_balance = ERC20ABIDispatcher { contract_address: token_contract }
@@ -104,19 +105,19 @@ mod TokenLocker {
         /// # Arguments
         /// * `token_contract` - Address of token contract that is going to be unlocked
         /// * `lock_timestamp` - Initial lock timestamp
-        fn unlock(ref self: ContractState, token_contract: ContractAddress, lock_timestamp: u64) {
+        fn unlock(ref self: ContractState, token_contract: ContractAddress, lock_timestamp: u64, lock_duration: u64) {
             assert(lock_timestamp != 0, ZERO_LOCK_TIME);
 
             let caller = get_caller_address();
             let current_time = get_block_timestamp();
-            let locked_amount = self.locks.read((token_contract, caller, lock_timestamp));
+            let locked_amount = self.locks.read((token_contract, caller, lock_timestamp, lock_duration));
 
             assert(locked_amount != 0, LOCK_NONEXIST);
-            let lock_end_time = lock_timestamp + self.lock_time.read();
+            let lock_end_time = lock_timestamp + lock_duration;
 
             assert(current_time >= lock_end_time, STILL_LOCKED);
 
-            self.locks.write((token_contract, caller, lock_timestamp), 0);
+            self.locks.write((token_contract, caller, lock_timestamp, lock_duration), 0);
 
             ERC20ABIDispatcher { contract_address: token_contract }.transfer(caller, locked_amount);
 
@@ -142,9 +143,10 @@ mod TokenLocker {
             self: @ContractState,
             token_contract: ContractAddress,
             owner: ContractAddress,
-            lock_timestamp: u64
+            lock_timestamp: u64,
+            lock_duration: u64
         ) -> u256 {
-            self.locks.read((token_contract, owner, lock_timestamp))
+            self.locks.read((token_contract, owner, lock_timestamp, lock_duration))
         }
 
         /// View method for time left to unlock
@@ -158,14 +160,15 @@ mod TokenLocker {
             self: @ContractState,
             token_contract: ContractAddress,
             owner: ContractAddress,
-            lock_timestamp: u64
+            lock_timestamp: u64,
+            lock_duration: u64
         ) -> u64 {
-            let locked_amount = self.locks.read((token_contract, owner, lock_timestamp));
+            let locked_amount = self.locks.read((token_contract, owner, lock_timestamp, lock_duration));
             if (locked_amount == 0) {
                 return 0_u64;
             }
 
-            let lock_end_time = lock_timestamp + self.lock_time.read();
+            let lock_end_time = lock_timestamp + lock_duration;
             let current_time = get_block_timestamp();
             if (current_time >= lock_end_time) {
                 return 0_u64;
