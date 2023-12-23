@@ -1,5 +1,7 @@
 # STARKMINT
 
+![Starkmint Logo](https://www.starkmint.com/_next/image?url=%2Fboilr3.png&w=640&q=75)
+
 Welcome to Starkmint, a fully decentralized Starknet service provider, offering state-of-the-art solutions for your cryptographic needs. Hosted on [starkmint.com](https://starkmint.com), our platform is designed to empower users with secure and efficient tools in the blockchain space.
 
 ## Features
