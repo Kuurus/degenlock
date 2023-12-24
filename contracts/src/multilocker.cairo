@@ -40,7 +40,8 @@ mod TokenLocker {
         locker: ContractAddress,
         token: ContractAddress,
         lock_timestamp: u64,
-        amount: u256
+        amount: u256,
+        duration: u64
     }
 
     #[derive(Drop, starknet::Event)]
@@ -49,6 +50,7 @@ mod TokenLocker {
         token: ContractAddress,
         unlock_timestamp: u64,
         amount: u256
+        
     }
 
     #[storage]
@@ -81,11 +83,11 @@ mod TokenLocker {
 
             let this_address = get_contract_address();
             let initial_balance = ERC20ABIDispatcher { contract_address: token_contract }
-                .balanceOf(this_address);
+                .balance_of(this_address);
             ERC20ABIDispatcher { contract_address: token_contract }
-                .transferFrom(caller, this_address, amount);
+                .transfer_from(caller, this_address, amount);
             assert(
-                ERC20ABIDispatcher { contract_address: token_contract }.balanceOf(this_address)
+                ERC20ABIDispatcher { contract_address: token_contract }.balance_of(this_address)
                     - initial_balance == amount,
                 TRANSFER_FAIL
             );
@@ -96,7 +98,8 @@ mod TokenLocker {
                         locker: caller,
                         token: token_contract,
                         lock_timestamp: current_time,
-                        amount: amount
+                        amount: amount,
+                        duration: lock_duration
                     }
                 );
         }

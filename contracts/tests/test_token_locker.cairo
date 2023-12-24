@@ -9,7 +9,9 @@ use starknet_forge_template::multilocker::{ITokenLockerDispatcher, ITokenLockerD
 use starknet_forge_template::tokens::interface::{
     Istarknet_forge_templateMemecoinDispatcher, Istarknet_forge_templateMemecoinDispatcherTrait
 };
-
+use openzeppelin::token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
+use openzeppelin::token::erc20::{ERC20ABIDispatcher, ERC20ABIDispatcherTrait};
+use starknet::contract_address_to_felt252;
 fn setup() -> (ContractAddress, ContractAddress, ContractAddress) {
     let owner: ContractAddress = 'owner'.try_into().unwrap();
     let locker_calldata = array![];
@@ -43,7 +45,7 @@ fn test_lock() {
     let token_dispatcher = Istarknet_forge_templateMemecoinDispatcher { contract_address: token };
     let locker_dispatcher = ITokenLockerDispatcher { contract_address: locker };
 
-    let balance = token_dispatcher.balanceOf(owner);
+    let balance = token_dispatcher.balance_of(owner);
     balance.print();
 
     start_prank(CheatTarget::One(token), owner);
@@ -55,9 +57,9 @@ fn test_lock() {
     locker_dispatcher.lock(token, 1000, 200);
     stop_prank(CheatTarget::One(locker));
 
-    assert(token_dispatcher.balanceOf(owner) == 0, 'balanceOf owner not 0');
+    assert(token_dispatcher.balance_of(owner) == 0, 'balance_of owner not 0');
 
-    assert(token_dispatcher.balanceOf(locker) == 1000, 'balanceOf locker not 1000');
+    assert(token_dispatcher.balance_of(locker) == 1000, 'balance_of locker not 1000');
 
     assert(
         locker_dispatcher.get_locked_amount(token, owner, 100, 200) == 1000,
@@ -67,6 +69,49 @@ fn test_lock() {
     assert(locker_dispatcher.get_time_left(token, owner, 100, 200) == 200, 'time left not 200');
     stop_warp(CheatTarget::One(locker));
 }
+
+
+#[test]
+fn test_lock_mytoken() {
+    let (owner, locker, zizi) = setup();
+    //declare 
+    let token_d = declare('MyToken');
+    let mut calldata: Array<felt252> = ArrayTrait::new();
+    calldata.append(1000);
+    calldata.append('zizicoin');
+    calldata.append('zizi');
+    let reciepient = contract_address_to_felt252(owner);
+    calldata.append(reciepient);
+
+    let token = token_d.deploy(@calldata).unwrap();
+    let token_dispatcher = ERC20ABIDispatcher { contract_address: token };
+    let locker_dispatcher = ITokenLockerDispatcher { contract_address: locker };
+
+    assert(token_dispatcher.balance_of(owner) == 1000, 'balance_of owner not 1000');
+    start_prank(CheatTarget::One(token), owner);
+    token_dispatcher.approve(locker, 1000);
+    stop_prank(CheatTarget::One(token));
+
+    start_warp(CheatTarget::One(locker), 100);
+    start_prank(CheatTarget::One(locker), owner);
+    locker_dispatcher.lock(token, 1000, 200);
+    stop_prank(CheatTarget::One(locker));
+
+    assert(token_dispatcher.balance_of(owner) == 0, 'balance_of owner not 0');
+
+    assert(token_dispatcher.balance_of(locker) == 1000, 'balance_of locker not 1000');
+
+    assert(
+        locker_dispatcher.get_locked_amount(token, owner, 100, 200) == 1000,
+        'lockedAmount owner not 1000'
+    );
+
+    assert(locker_dispatcher.get_time_left(token, owner, 100, 200) == 200, 'time left not 200');
+    stop_warp(CheatTarget::One(locker));
+    
+
+}
+
 
 #[test]
 #[should_panic(expected: ('Still locked',))]
@@ -84,7 +129,7 @@ fn test_unlock_early() {
     locker_dispatcher.lock(token, 1000, 200);
     stop_prank(CheatTarget::One(locker));
 
-    assert(token_dispatcher.balanceOf(owner) == 0, 'balanceOf owner not 0');
+    assert(token_dispatcher.balance_of(owner) == 0, 'balance_of owner not 0');
 
     start_warp(CheatTarget::One(locker), 200);
     start_prank(CheatTarget::One(locker), owner);
@@ -110,7 +155,7 @@ fn test_unlock_no_owner() {
     locker_dispatcher.lock(token, 1000, 200);
     stop_prank(CheatTarget::One(locker));
 
-    assert(token_dispatcher.balanceOf(owner) == 0, 'balanceOf owner not 0');
+    assert(token_dispatcher.balance_of(owner) == 0, 'balance_of owner not 0');
 
     start_warp(CheatTarget::One(locker), 300);
     start_prank(CheatTarget::One(locker), no_owner);
@@ -133,16 +178,16 @@ fn test_unlock() {
     locker_dispatcher.lock(token, 1000, 200);
     stop_prank(CheatTarget::One(locker));
 
-    assert(token_dispatcher.balanceOf(owner) == 0, 'balanceOf owner not 0');
+    assert(token_dispatcher.balance_of(owner) == 0, 'balance_of owner not 0');
 
     start_warp(CheatTarget::One(locker), 300);
     start_prank(CheatTarget::One(locker), owner);
     locker_dispatcher.unlock(token, 100, 200);
     stop_prank(CheatTarget::One(locker));
 
-    assert(token_dispatcher.balanceOf(locker) == 0, 'balanceOf locker not 0');
+    assert(token_dispatcher.balance_of(locker) == 0, 'balance_of locker not 0');
 
-    assert(token_dispatcher.balanceOf(owner) == 1000, 'balanceOf owner not 1000');
+    assert(token_dispatcher.balance_of(owner) == 1000, 'balance_of owner not 1000');
 
     assert(locker_dispatcher.get_locked_amount(token, owner, 100, 200) == 0, 'lockedAmount owner not 0');
 
