@@ -5,3 +5,12 @@ type Token {
   owner: String
   tokenName: String
 }
+
+type Locker {
+  id: String! # Token address
+  owner: String
+  tokenName: String
+  timestamp: BigInt
+  amount: BigInt
+  duration: BigInt
+}

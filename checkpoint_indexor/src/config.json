@@ -1,6 +1,7 @@
 {
   "network_node_url":"https://starknet-goerli.infura.io/v3/3d5e774ac52847fd8cf5c2dd2fc76cf6" ,
-   "start": 919381,
+   "start": 
+   919381,
   "sources": [
     {
       "contract": "0x061a4c53f11e29716e4c0bb28192fa03b74346a3cfdf08fcef43148b92679887",
@@ -9,6 +10,17 @@
         {
           "name": "TokenDeployed",
           "fn": "handleTokenDeployed"
+        }
+      ]
+    },
+    {
+      "contract": "0x06a50384b5785dc4d4b1b5ea5101906bf94a9030e7932729123133942c352503",
+      "start": 
+      922800,
+      "events": [
+        {
+          "name": "TokenLocked",
+          "fn": "handleTokenLocked"
         }
       ]
     }
