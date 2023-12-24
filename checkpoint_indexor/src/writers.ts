@@ -49,7 +49,14 @@ export async function handleTokenLocked({
   // If token isn't indexed yet we add it, else we load it
   //if (await newToken(rawEvent.from_address, mysql)) {
   let token = await createToken(rawEvent.data[1]);
-
+  console.log({
+    id: rawEvent.data[1],
+    owner: rawEvent.data[0],
+    tokenName: token.name,
+    timestamp: hexToDecimal(rawEvent.data[2]),
+    amount: hexToDecimal(rawEvent.data[3]),
+    duration: hexToDecimal(rawEvent.data[4])
+  });
   let a = await mysql.queryAsync(`INSERT INTO lockers SET ?`, [
     {
       id: rawEvent.data[1],
@@ -57,7 +64,7 @@ export async function handleTokenLocked({
       tokenName: token.name,
       timestamp: hexToDecimal(rawEvent.data[2]),
       amount: hexToDecimal(rawEvent.data[3]),
-      duration: hexToDecimal(rawEvent.data[4])
+      duration: hexToDecimal(rawEvent.data[5])
     }
   ]);
   console.log(a);
